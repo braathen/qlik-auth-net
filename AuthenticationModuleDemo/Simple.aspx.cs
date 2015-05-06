@@ -16,11 +16,13 @@ namespace AuthenticationModuleDemo
                     UserId = "rikard",
                 };
 
-                //Add a list of groups (delimiteer separated string or List<string>)
+                //Add a list of groups (delimiter separated string or List<string>)
                 req.AddGroups("Group1;Group2;Group3");
 
-                //Add some custom attributes (delimiteer separated string or List<string>)
+                //Add some custom attributes (delimiter separated string or List<string>)
                 req.AddAttributes("Email", "rfn@qlikdude.com");
+                req.AddAttributes("Country", "Sweden");
+                req.AddAttributes("Phone", "+46-012-345678");
 
                 //Perform ticket request
                 req.TicketRequest();

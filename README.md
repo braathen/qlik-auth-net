@@ -1,6 +1,20 @@
-## QlikAuthNet
+## About
 
-QlikAuthNet is an ASP.NET module for simplifying custom authentication with Qlik Sense. With minimal coding effort it takes care of everything from ticket request to redirection.
+QlikAuthNet is an ASP.NET module for simplifying custom authentication with Qlik Sense. With minimal coding effort it takes care of everything from ticket request to redirection. Everything is more or less automated and the only thing required is to supply user credentials and attributes.
+
+## Installation
+
+Easiest way to install is by using the NuGet Package Management Console inside of Visual Studio.
+
+```sh
+PM> Install-Package QlikAuthNet
+```
+
+Create a virtual proxy in Qlik Sense QMC and refer the Authentication Module to the URL of the website. Please see the Qlik Sense help regarding how to set up a virtual proxy.
+
+Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying this to IIS the ApplicationPool must have access to this certificate.
+
+## Examples
 
 ```cs
 using QlikAuthNet
@@ -24,18 +38,6 @@ req.AddAttributes("Country", "Sweden");
 ```
 
 All of the above can be a semicolon separated list that will be split automatically. One or more custom delimiters can optionally be specified as second argument if semicolon is not appropriate.
-
-## Installation
-
-Easiest way to install is by using the NuGet Package Management Console inside of Visual Studio.
-
-```sh
-PM> Install-Package QlikAuthNet
-```
-
-Create a virtual proxy in Qlik Sense QMC and refer the Authentication Module to the URL of the website.
-
-Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying this to IIS the ApplicationPool must have access to this certificate.
 
 ## Authentication Module Demo
 

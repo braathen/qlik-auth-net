@@ -39,7 +39,7 @@ req.AddAttributes("Email", "some@email.com");
 req.AddAttributes("Country", "Sweden");
 ```
 
-All of the above can be a semicolon separated list that will be split automatically. One or more custom delimiters can optionally be specified as third argument if semicolon is not appropriate. It's also possible to use a List<string> directly.
+All of the above can be a semicolon separated list that will be split automatically. One or more custom delimiters can optionally be specified as third argument if semicolon is not appropriate. It's also possible to use a `List<string>` directly.
 
 ## Authentication Module Demo
 

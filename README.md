@@ -12,7 +12,7 @@ PM> Install-Package QlikAuthNet
 
 Create a virtual proxy in Qlik Sense QMC and refer the Authentication Module to the URL of the website. Please see the Qlik Sense help regarding how to set up a virtual proxy.
 
->Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying this to IIS the ApplicationPool must have access to this certificate.
+>Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying to IIS the ApplicationPool must have access to this certificate.
 
 ## Examples
 
@@ -30,7 +30,7 @@ var req = new Ticket()
 req.TicketRequest();
 ```
 
-It has some extra functionality to make adding of custom attributes and especially groups very simple. Here's some examples...
+There is some extra functionality to make adding of custom attributes and especially groups very simple. Here's some examples...
 
 ```cs
 req.AddGroups("Developers;Enterprise Architects;PreSales");
@@ -39,7 +39,7 @@ req.AddAttributes("Email", "some@email.com");
 req.AddAttributes("Country", "Sweden");
 ```
 
-All of the above can be a semicolon separated list that will be split automatically. One or more custom delimiters can optionally be specified as second argument if semicolon is not appropriate.
+All of the above can be a semicolon separated list that will be split automatically. One or more custom delimiters can optionally be specified as third argument if semicolon is not appropriate. It's also possible to use a List<string> directly.
 
 ## Authentication Module Demo
 
@@ -51,13 +51,16 @@ This solution includes a demo project to make it simple to demonstrate the conce
 
 Explanations to common problems that might occur...
 
-#### proxyRestUri not defined!
+#### "proxyRestUri not defined!"
 The module is designed to be used in a flow where the virtual proxy redirects to the module with the proxyRestUri and targetId parameters in the URL. If these can not be obtained automatically they need to be supplied manually.
 
-#### Certificate not found! Verify AppPool credentials.
+#### "Please don't access this Authentication Module directly. Use a virtual proxy instead!"
+Again, this is the same problem as above. Always access the module through the virtual proxy and the flow will be correct and according to best practise.
+
+#### "Certificate not found! Verify AppPool credentials."
 The module looks for QlikClient certificate in the local certificate store. If deployed to IIS the ApplicationPool must have access to the certificate.
 
-#### Unknown error
+#### "Unknown error"
 You tell me!
 
 ## License

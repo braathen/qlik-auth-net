@@ -30,3 +30,4 @@ qvw/
 *.qvw
 packages/
 Service References/
+NuGet/

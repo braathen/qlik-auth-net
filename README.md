@@ -12,9 +12,11 @@ PM> Install-Package QlikAuthNet
 
 Create a virtual proxy in Qlik Sense QMC and refer the Authentication Module to the URL of the website. Please see the Qlik Sense help regarding how to set up a virtual proxy.
 
-Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying this to IIS the ApplicationPool must have access to this certificate.
+>Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying this to IIS the ApplicationPool must have access to this certificate.
 
 ## Examples
+
+Minimal usage may look like this:
 
 ```cs
 using QlikAuthNet
@@ -47,7 +49,16 @@ This solution includes a demo project to make it simple to demonstrate the conce
 
 ## F.A.Q
 
-coming soon!
+Explanations to common problems that might occur...
+
+### proxyRestUri not defined!
+The module is designed to be used in a flow where the virtual proxy redirects to the module with the proxyRestUri and targetId parameters in the URL. If these can not be obtained automatically they need to be supplied manually.
+
+### Certificate not found! Verify AppPool credentials.
+The module looks for QlikClient certificate in the local certificate store. If deployed to IIS the ApplicationPool must have access to the certificate.
+
+### Unknown error
+You tell me!
 
 ## License
 

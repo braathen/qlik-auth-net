@@ -12,7 +12,7 @@ PM> Install-Package QlikAuthNet
 
 Create a virtual proxy in Qlik Sense QMC and refer the Authentication Module to the URL of the website. Please see the Qlik Sense help regarding how to set up a virtual proxy.
 
->Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying to IIS the ApplicationPool must have access to this certificate.
+>Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying to IIS the ApplicationPool must have access to this certificate. If deployed on another server which Qlik Sense is hosted on it's necessary to export certificates from QMC and install the client.pfx (QlikClient) certificate on the new server.
 
 ## Examples
 
@@ -65,6 +65,15 @@ This can be many things, but one thing to make sure is the upper/lowercase of th
 
 #### "Unknown error"
 You tell me!
+
+#### It says nothing at all... Nothing seems to happen?
+The module is designed to do all the work and redirect the user to it's final destination, however if something goes wrong, an error message is returned as a string to be handled in some way, see the AuthenticationModuleDemo example.
+
+#### Is it possible to override the automatic redirection?
+Yes, by not including a TargetId in the request a string is returned (from v1.0.1) that looks something like `qlikTicket=G1xQJQOPWeG.3Wl4` which then may be added to the redirection URL manually. Be aware though that when being redirected from the proxy the module tries to request this parameter. Also, it's highly recommended to keep the flow from the proxy.
+
+#### Is it possible to authenticate the ticket request without certificates?
+No. Certificates is the only way to authenticate ticket requests. In QlikView it was possible to do Windows Authentication, but in Qlik Sense this is not possible.
 
 ## License
 

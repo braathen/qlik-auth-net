@@ -12,7 +12,7 @@ PM> Install-Package QlikAuthNet
 
 Create a virtual proxy in Qlik Sense QMC and refer the Authentication Module to the URL of the website. Please see the Qlik Sense help regarding how to set up a virtual proxy.
 
->Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying to IIS the ApplicationPool must have access to this certificate. If deployed on another server which Qlik Sense is hosted on it's necessary to export certificates from QMC and install the client.pfx (QlikClient) certificate on the new server.
+>Note: The module will check for the presence of QlikClient certificate in the local certificate store. When deploying to IIS the ApplicationPool must have access to this certificate. If deployed on a separate server it's necessary to export certificates from QMC and install the client.pfx (QlikClient) certificate on the new server.
 
 ## Examples
 

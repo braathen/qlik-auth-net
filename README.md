@@ -51,7 +51,7 @@ This solution includes a demo project to make it simple to demonstrate the conce
 
 ## F.A.Q
 
-Explanations to common problems that might occur...
+Explanations and answers to common problems and questions that might occur...
 
 #### "proxyRestUri not defined!"
 The module is designed to be used in a flow where the virtual proxy redirects to the module with the proxyRestUri and targetId parameters in the URL. If these can not be obtained automatically they need to be supplied manually.
@@ -76,6 +76,9 @@ Yes, by not including a TargetId in the request a string is returned (from v1.0.
 
 #### Is it possible to authenticate the ticket request without certificates?
 No. Certificates is the only way to authenticate ticket requests. In QlikView it was possible to do Windows Authentication, but in Qlik Sense this is not possible.
+
+#### My custom attributes does not seem to work?
+See the note under Examples section. This works as designed.
 
 ## License
 

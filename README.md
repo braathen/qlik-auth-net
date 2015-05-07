@@ -1,6 +1,6 @@
 ## About
 
-QlikAuthNet is an ASP.NET module for simplifying custom authentication with Qlik Sense. With minimal coding effort it takes care of everything from ticket request to redirection. Everything is more or less automated and the only thing required is to supply user credentials and attributes.
+QlikAuthNet is an ASP.NET module for simplifying custom authentication with Qlik Sense. With minimal coding effort it takes care of everything from ticket request to redirection. Everything is dynamic and more or less automated, the only thing required is to supply user credentials and attributes. No hardcoding paths are necessary and the same code can serve multiple proxys/deployments without changes.
 
 ## Installation
 
@@ -40,6 +40,8 @@ req.AddAttributes("Country", "Sweden");
 ```
 
 All of the above can be a semicolon separated list that will be split automatically. One or more custom delimiters can optionally be specified as third argument if semicolon is not appropriate. It's also possible to use a `List<string>` directly.
+
+>Note: When using custom attributes together with security rules it's important to use `user.environment.<attribute>` as the ticket information belongs to the session, not the user record. For instance you might want to create security rules containing both `user.environment.group` and `user.group` to verify a users group membership if there are users accessing Qlik Sense both through tickets and Windows Authentication (different proxys).
 
 ## Authentication Module Demo
 

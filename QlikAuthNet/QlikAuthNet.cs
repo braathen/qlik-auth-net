@@ -165,14 +165,14 @@ namespace QlikAuthNet
                     var res = JsonConvert.DeserializeObject<ResponseData>(new StreamReader(stream).ReadToEnd());
 
                     if (String.IsNullOrEmpty(res.TargetUri))
-                        return res.Ticket;
+                        return "qlikTicket=" + res.Ticket;
                     
                     string redirectUrl;
 
                     if (res.TargetUri.Contains("?"))
-                        redirectUrl = res.TargetUri + "&QlikTicket=" + res.Ticket;
+                        redirectUrl = res.TargetUri + "&qlikTicket=" + res.Ticket;
                     else
-                        redirectUrl = res.TargetUri + "?QlikTicket=" + res.Ticket;
+                        redirectUrl = res.TargetUri + "?qlikTicket=" + res.Ticket;
 
                     context.Response.Redirect(redirectUrl);
                 }

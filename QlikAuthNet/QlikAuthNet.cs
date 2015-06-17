@@ -10,30 +10,31 @@ using Newtonsoft.Json;
 
 namespace QlikAuthNet
 {
+    public class Session : Ticket
+    {
+    }
+
     public class Ticket
     {
         private X509Certificate2 certificate_ { get; set; }
 
         public string UserDirectory { get; set; }
         public string UserId { get; set; }
+        
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ProxyRestUri { get; set; }
+        
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string TargetId { get; set; }
+        
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public List<Dictionary<string, string>> Attributes { get; set; }
-
-        public class RequestJson
-        {
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public String UserDirectory { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public String UserId { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public List<KeyValuePair<string, string>> Attributes { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public String TargetId { get; set; }
-        }
+        
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string SessionId { get; set; }
+        
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool NewUser { get; set; }
 
         public class ResponseData
         {
@@ -44,16 +45,6 @@ namespace QlikAuthNet
             public String TargetUri;
         }
 
-
-        public Ticket()
-        {
-            // First locate the Qlik Sense certificate
-            X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
-            store.Open(OpenFlags.ReadOnly);
-            certificate_ = store.Certificates.Cast<X509Certificate2>().FirstOrDefault(c => c.FriendlyName == "QlikClient");
-            store.Close();
-            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-        }
         /// <summary>
         /// Add a delimited separated string of groups
         /// </summary>
@@ -121,60 +112,28 @@ namespace QlikAuthNet
         /// <returns>If targetId is not provided in the request a ticket will be returned for manual processing</returns>
         public string TicketRequest()
         {
-            var context = HttpContext.Current;
-
             try
             {
-                // Get data as json
-                var json = ParseRequestData();
-
-                //Create the HTTP Request and add required headers and content in Xrfkey
-                string Xrfkey = GenerateXrfKey();
-
-                //Create URL to REST endpoint for tickets
-                Uri url = CombineUri(ProxyRestUri, "ticket?Xrfkey=" + Xrfkey);
-
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-                // Add the method to authentication the user
-                request.Method = "POST";
-                request.Accept = "application/json";
-                request.Headers.Add("X-Qlik-Xrfkey", Xrfkey);
-
-                if (certificate_ == null)
-                    throw new Exception("Certificate not found! Verify AppPool credentials.");
-
-                request.ClientCertificates.Add(certificate_);
-                byte[] bodyBytes = Encoding.UTF8.GetBytes(json);
-
-                if (!string.IsNullOrEmpty(json))
-                {
-                    request.ContentType = "application/json";
-                    request.ContentLength = bodyBytes.Length;
-                    Stream requestStream = request.GetRequestStream();
-                    requestStream.Write(bodyBytes, 0, bodyBytes.Length);
-                    requestStream.Close();
-                }
-
-                // make the web request and redirect user
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                Stream stream = response.GetResponseStream();
+                //Execute request
+                Stream stream = Execute("ticket");
 
                 if (stream != null)
                 {
                     var res = JsonConvert.DeserializeObject<ResponseData>(new StreamReader(stream).ReadToEnd());
 
+                    //Return ticket only due to lack of TargetUri
                     if (String.IsNullOrEmpty(res.TargetUri))
                         return "qlikTicket=" + res.Ticket;
-                    
-                    string redirectUrl;
 
+                    //Add ticket to TargetUri
+                    string redirectUrl;
                     if (res.TargetUri.Contains("?"))
                         redirectUrl = res.TargetUri + "&qlikTicket=" + res.Ticket;
                     else
                         redirectUrl = res.TargetUri + "?qlikTicket=" + res.Ticket;
 
-                    context.Response.Redirect(redirectUrl);
+                    //Redirect user
+                    HttpContext.Current.Response.Redirect(redirectUrl);
                 }
                 else
                 {
@@ -187,6 +146,88 @@ namespace QlikAuthNet
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Add a session
+        /// </summary>
+        /// <returns>Returns a json object containing the user details attached to the session</returns>
+        public string SessionRequest()
+        {
+            try
+            {
+                Stream stream = Execute("session");
+
+                if (stream != null)
+                {
+                    return new StreamReader(stream).ReadToEnd();
+                }
+                
+                throw new Exception("Unknown error");
+            }
+            catch (WebException ex)
+            {
+                var stream = ex.Response.GetResponseStream();
+
+                NewUser = false;
+
+                return stream != null && new StreamReader(stream).ReadToEnd().Contains("already exists") ? JsonConvert.SerializeObject(this) : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private void LocateCertificate()
+        {
+            // First locate the Qlik Sense certificate
+            X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadOnly);
+            certificate_ = store.Certificates.Cast<X509Certificate2>().FirstOrDefault(c => c.FriendlyName == "QlikClient");
+            store.Close();
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+        }
+
+        private Stream Execute(string endpoint)
+        {
+            // Get data as json
+            var json = ParseRequestData();
+
+            //Create URL to REST endpoint for tickets
+            Uri url = CombineUri(ProxyRestUri, endpoint);
+
+            //Get certificate
+            LocateCertificate();
+
+            //Create the HTTP Request and add required headers and content in Xrfkey
+            string xrfkey = GenerateXrfKey();
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url + "?Xrfkey=" + xrfkey);
+
+            // Add the method to authentication the user
+            request.Method = "POST";
+            request.Accept = "application/json";
+            request.Headers.Add("X-Qlik-Xrfkey", xrfkey);
+
+            if (certificate_ == null)
+                throw new Exception("Certificate not found! Verify AppPool credentials.");
+
+            request.ClientCertificates.Add(certificate_);
+            byte[] bodyBytes = Encoding.UTF8.GetBytes(json);
+
+            if (!string.IsNullOrEmpty(json))
+            {
+                request.ContentType = "application/json";
+                request.ContentLength = bodyBytes.Length;
+                Stream requestStream = request.GetRequestStream();
+                requestStream.Write(bodyBytes, 0, bodyBytes.Length);
+                requestStream.Close();
+            }
+
+            // make the web request
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            return response.GetResponseStream();
         }
 
         private string ParseRequestData()

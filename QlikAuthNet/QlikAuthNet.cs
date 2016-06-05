@@ -20,6 +20,8 @@ namespace QlikAuthNet
 
         public string UserDirectory { get; set; }
         public string UserId { get; set; }
+        public StoreLocation CertificateLocation { get; set; }
+        public string CertificateName { get; set; }
         
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ProxyRestUri { get; set; }
@@ -35,6 +37,12 @@ namespace QlikAuthNet
         
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool NewUser { get; set; }
+
+        public Ticket()
+        {
+            CertificateLocation = StoreLocation.CurrentUser;
+            CertificateName = "QlikClient";
+        }
 
         public class ResponseData
         {
@@ -182,9 +190,9 @@ namespace QlikAuthNet
         private void LocateCertificate()
         {
             // First locate the Qlik Sense certificate
-            X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            X509Store store = new X509Store(StoreName.My, CertificateLocation);
             store.Open(OpenFlags.ReadOnly);
-            certificate_ = store.Certificates.Cast<X509Certificate2>().FirstOrDefault(c => c.FriendlyName == "QlikClient");
+            certificate_ = store.Certificates.Cast<X509Certificate2>().FirstOrDefault(c => c.FriendlyName == CertificateName);
             store.Close();
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
         }

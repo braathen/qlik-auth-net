@@ -60,7 +60,7 @@ The module is designed to be used in a flow where the virtual proxy redirects to
 Again, this is the same problem as above. Always access the module through the virtual proxy and the flow will be correct and according to best practise.
 
 #### "Certificate not found! Verify AppPool credentials."
-The module looks for QlikClient certificate in the local certificate store. If deployed to IIS the ApplicationPool must have access to the certificate.
+The module looks for QlikClient certificate in the local certificate store. If deployed to IIS the ApplicationPool must have access to the certificate. As of v1.1.2 it is possible to set the CertificateLocation (default=CurrentUser) and CertificateName (default=QlikClient).
 
 #### "The remote server returned an error: (400) Bad Request."
 This can be many things, but one thing to make sure is the upper/lowercase of the virtual proxy prefix. As of this writing it's still case sensitive. Always use lowercase only.

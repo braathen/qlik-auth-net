@@ -16,7 +16,7 @@ namespace QlikAuthNet
 
     public class Ticket
     {
-        private X509Certificate2 certificate_ { get; set; }
+        private X509Certificate2 Certificate { get; set; }
 
         public string UserDirectory { get; set; }
         public string UserId { get; set; }
@@ -46,11 +46,11 @@ namespace QlikAuthNet
 
         public class ResponseData
         {
-            public String UserDirectory;
-            public String UserId;
+            public string UserDirectory;
+            public string UserId;
             public List<Dictionary<string, string>> Attributes;
-            public String Ticket;
-            public String TargetUri;
+            public string Ticket;
+            public string TargetUri;
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace QlikAuthNet
             var chars = new char[16];
             var rd = new Random();
 
-            for (int i = 0; i < 16; i++)
+            for (var i = 0; i < 16; i++)
             {
                 chars[i] = allowedChars[rd.Next(0, allowedChars.Length)];
             }
@@ -123,14 +123,14 @@ namespace QlikAuthNet
             try
             {
                 //Execute request
-                Stream stream = Execute("ticket");
+                var stream = Execute("ticket");
 
                 if (stream != null)
                 {
                     var res = JsonConvert.DeserializeObject<ResponseData>(new StreamReader(stream).ReadToEnd());
 
                     //Return ticket only due to lack of TargetUri
-                    if (String.IsNullOrEmpty(res.TargetUri))
+                    if (string.IsNullOrEmpty(res.TargetUri))
                         return "qlikTicket=" + res.Ticket;
 
                     //Add ticket to TargetUri
@@ -139,6 +139,9 @@ namespace QlikAuthNet
                         redirectUrl = res.TargetUri + "&qlikTicket=" + res.Ticket;
                     else
                         redirectUrl = res.TargetUri + "?qlikTicket=" + res.Ticket;
+
+                    //Clearing response
+                    HttpContext.Current.Response.Clear();
 
                     //Redirect user
                     HttpContext.Current.Response.Redirect(redirectUrl);
@@ -164,7 +167,7 @@ namespace QlikAuthNet
         {
             try
             {
-                Stream stream = Execute("session");
+                var stream = Execute("session");
 
                 if (stream != null)
                 {
@@ -190,9 +193,9 @@ namespace QlikAuthNet
         private void LocateCertificate()
         {
             // First locate the Qlik Sense certificate
-            X509Store store = new X509Store(StoreName.My, CertificateLocation);
+            var store = new X509Store(StoreName.My, CertificateLocation);
             store.Open(OpenFlags.ReadOnly);
-            certificate_ = store.Certificates.Cast<X509Certificate2>().FirstOrDefault(c => c.FriendlyName == CertificateName);
+            Certificate = store.Certificates.Cast<X509Certificate2>().FirstOrDefault(c => c.FriendlyName == CertificateName);
             store.Close();
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
         }
@@ -203,38 +206,38 @@ namespace QlikAuthNet
             var json = ParseRequestData();
 
             //Create URL to REST endpoint for tickets
-            Uri url = CombineUri(ProxyRestUri, endpoint);
+            var url = CombineUri(ProxyRestUri, endpoint);
 
             //Get certificate
             LocateCertificate();
 
             //Create the HTTP Request and add required headers and content in Xrfkey
-            string xrfkey = GenerateXrfKey();
+            var xrfkey = GenerateXrfKey();
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url + "?Xrfkey=" + xrfkey);
+            var request = (HttpWebRequest)WebRequest.Create(url + "?Xrfkey=" + xrfkey);
 
             // Add the method to authentication the user
             request.Method = "POST";
             request.Accept = "application/json";
             request.Headers.Add("X-Qlik-Xrfkey", xrfkey);
 
-            if (certificate_ == null)
+            if (Certificate == null)
                 throw new Exception("Certificate not found! Verify AppPool credentials.");
 
-            request.ClientCertificates.Add(certificate_);
-            byte[] bodyBytes = Encoding.UTF8.GetBytes(json);
+            request.ClientCertificates.Add(Certificate);
+            var bodyBytes = Encoding.UTF8.GetBytes(json);
 
             if (!string.IsNullOrEmpty(json))
             {
                 request.ContentType = "application/json";
                 request.ContentLength = bodyBytes.Length;
-                Stream requestStream = request.GetRequestStream();
+                var requestStream = request.GetRequestStream();
                 requestStream.Write(bodyBytes, 0, bodyBytes.Length);
                 requestStream.Close();
             }
 
             // make the web request
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var response = (HttpWebResponse)request.GetResponse();
             return response.GetResponseStream();
         }
 
@@ -243,15 +246,15 @@ namespace QlikAuthNet
             var context = HttpContext.Current;
 
             //Verify ProxyRestUri path
-            ProxyRestUri = !String.IsNullOrEmpty(ProxyRestUri)
+            ProxyRestUri = !string.IsNullOrEmpty(ProxyRestUri)
                 ? ProxyRestUri
                 : context.Request.QueryString["proxyRestUri"];
 
-            if (String.IsNullOrEmpty(ProxyRestUri))
+            if (string.IsNullOrEmpty(ProxyRestUri))
                 throw new Exception("ProxyRestUri not defined!");
 
             //Verify that TargetId is available
-            TargetId = !String.IsNullOrEmpty(TargetId)
+            TargetId = !string.IsNullOrEmpty(TargetId)
                 ? TargetId
                 : context.Request.QueryString["targetId"];
 

@@ -22,19 +22,19 @@ namespace QlikAuthNet
         public string UserId { get; set; }
         public StoreLocation CertificateLocation { get; set; }
         public string CertificateName { get; set; }
-        
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ProxyRestUri { get; set; }
-        
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string TargetId { get; set; }
-        
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public List<Dictionary<string, string>> Attributes { get; set; }
-        
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string SessionId { get; set; }
-        
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool NewUser { get; set; }
 
@@ -140,6 +140,9 @@ namespace QlikAuthNet
                     else
                         redirectUrl = res.TargetUri + "?qlikTicket=" + res.Ticket;
 
+                    //Clearing response
+                    HttpContext.Current.Response.Clear();
+
                     //Redirect user
                     HttpContext.Current.Response.Redirect(redirectUrl);
                 }
@@ -170,7 +173,7 @@ namespace QlikAuthNet
                 {
                     return new StreamReader(stream).ReadToEnd();
                 }
-                
+
                 throw new Exception("Unknown error");
             }
             catch (WebException ex)
